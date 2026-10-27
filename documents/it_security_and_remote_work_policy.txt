@@ -1,0 +1,16 @@
+IntellectBridge IT Security and Remote Work Policy
+
+1. Work From Home (Remote Work) Eligibility
+Employees whose roles permit remote work may work from home up to 3 days per week, with Tuesday and Thursday designated as core in-office collaboration days. Employees must maintain a secure, quiet, and professional workspace with a reliable high-speed internet connection.
+
+2. Device and Network Security
+- Employees must only use company-issued laptops and devices to access corporate systems. Personal computers are strictly prohibited.
+- Multi-Factor Authentication (MFA) must be enabled on all accounts.
+- VPN Usage: The secure corporate VPN must be active at all times when connecting to the internet from outside the office.
+- Under no circumstances should corporate devices be connected to public, unsecured Wi-Fi networks without active VPN protection.
+
+3. Password Management
+Passwords must be a minimum of 12 characters and include a combination of uppercase letters, lowercase letters, numbers, and special symbols. Passwords must be changed every 90 days, and reuse of the last 5 passwords is prohibited.
+
+4. Phishing and Security Incident Reporting
+Any suspicious emails, unexpected MFA prompts, or potential security breaches must be reported immediately to the IT Security Response Team at security@intellectbridge.com or by clicking the "Report Phishing" button in Outlook.

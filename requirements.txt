@@ -1,0 +1,11 @@
+# requirements.txt
+
+python-dotenv
+groq
+pandas
+numpy
+pyyaml
+flask
+markdown
+dotenv
+Pillow

@@ -1,0 +1,217 @@
+<!-- templates/chat.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntellectBridge</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <main class="chat-area">
+        <header class="header">
+            <div class="header-spacer"></div>
+            <h1>IntellectBridge</h1>
+            <button id="new-chat-button" class="new-chat-button" title="Start new chat">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                </svg>
+            </button>
+        </header>
+
+        <div class="chat-box" id="chat-box">
+            <!-- Initial AI message -->
+            <div class="message ai-message">
+                <p>Welcome to <strong>IntellectBridge</strong>! I am your virtual assistant for company HR policies, medical benefits, travel reimbursement caps, and IT guidelines.</p>
+                <p>I have direct, secure access to our official company guidelines. You can ask me questions such as:</p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><em>"How many days of paid vacation do I get and can I carry them over?"</em></li>
+                    <li><em>"What is the nightly hotel spending cap for New York?"</em></li>
+                    <li><em>"Is dental treatment covered under our employee health plan?"</em></li>
+                    <li><em>"What are the security guidelines for working from home?"</em></li>
+                </ul>
+                <p>How can I assist you today?</p>
+            </div>
+        </div>
+        <div class="input-container">
+            <div id="attachment-preview" class="attachment-preview" style="display: none;">
+                <span id="preview-icon" class="preview-icon"></span>
+                <span id="preview-name" class="preview-name"></span>
+                <button id="remove-attachment" type="button" class="remove-attachment">&times;</button>
+            </div>
+            <div class="input-area">
+                <button id="attach-button" class="attach-button" type="button" title="Attach file">📎</button>
+                <input type="file" id="file-input" accept=".txt,.md,.docx,.png,.jpg,.jpeg,.gif,.webp" style="display: none;">
+                <textarea id="user-input" placeholder="Type your message here..."></textarea>
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const attachButton = document.getElementById('attach-button');
+        const fileInput = document.getElementById('file-input');
+        const attachmentPreview = document.getElementById('attachment-preview');
+        const previewIcon = document.getElementById('preview-icon');
+        const previewName = document.getElementById('preview-name');
+        const removeAttachmentBtn = document.getElementById('remove-attachment');
+        let currentAttachment = null;
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        function appendMessage(html, cls) {
+            const div = document.createElement('div');
+            div.className = cls;
+            div.innerHTML = html;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        attachButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function() {
+            if (!this.files.length) return;
+            const file = this.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentAttachment = {
+                    filename: file.name,
+                    data: e.target.result,
+                    type: file.type
+                };
+                
+                // Determine preview icon based on extension
+                const ext = file.name.split('.').pop().toLowerCase();
+                let icon = '📄';
+                if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)) {
+                    icon = '🖼️';
+                } else if (ext === 'docx') {
+                    icon = '📝';
+                }
+                
+                previewIcon.textContent = icon;
+                previewName.textContent = file.name;
+                attachmentPreview.style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        removeAttachmentBtn.addEventListener('click', () => {
+            clearAttachment();
+        });
+
+        function clearAttachment() {
+            currentAttachment = null;
+            fileInput.value = '';
+            attachmentPreview.style.display = 'none';
+            previewIcon.textContent = '';
+            previewName.textContent = '';
+        }
+
+        function sendMessage() {
+            const userInput = document.getElementById('user-input');
+            const message = userInput.value;
+
+            if (message.trim() === "" && !currentAttachment) {
+                return; // Do not send empty messages
+            }
+
+            let messageHtml = '';
+            if (currentAttachment) {
+                const ext = currentAttachment.filename.split('.').pop().toLowerCase();
+                let icon = '📄';
+                if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)) {
+                    icon = '🖼️';
+                } else if (ext === 'docx') {
+                    icon = '📝';
+                }
+                messageHtml += `
+                    <div class="message-attachment">
+                        <span class="attachment-card-icon">${icon}</span>
+                        <span class="attachment-card-name">${escapeHtml(currentAttachment.filename)}</span>
+                    </div>
+                `;
+            }
+            if (message.trim() !== "") {
+                messageHtml += `<p>${escapeHtml(message)}</p>`;
+            }
+
+            appendMessage(messageHtml, 'message user-message');
+            userInput.value = '';
+
+            const attachmentToSend = currentAttachment;
+            clearAttachment();
+
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    message: message || "Analyze the attached file",
+                    attachment: attachmentToSend
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.response) {
+                    appendMessage(data.response, 'message ai-message');
+                } else {
+                    appendMessage(`<p>Error: ${escapeHtml(data.error || 'Unknown error')}</p>`, 'message error-message');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                appendMessage('<p>Error communicating with the server.</p>', 'message error-message');
+            });
+        }
+
+        const initialWelcomeHtml = `
+            <div class="message ai-message">
+                <p>Welcome to <strong>IntellectBridge</strong>! I am your virtual assistant for company HR policies, medical benefits, travel reimbursement caps, and IT guidelines.</p>
+                <p>I have direct, secure access to our official company guidelines. You can ask me questions such as:</p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><em>"How many days of paid vacation do I get and can I carry them over?"</em></li>
+                    <li><em>"What is the nightly hotel spending cap for New York?"</em></li>
+                    <li><em>"Is dental treatment covered under our employee health plan?"</em></li>
+                    <li><em>"What are the security guidelines for working from home?"</em></li>
+                </ul>
+                <p>How can I assist you today?</p>
+            </div>
+        `;
+
+        document.getElementById('new-chat-button').addEventListener('click', () => {
+            if (confirm("Are you sure you want to start a new chat? This will clear your current conversation history.")) {
+                fetch('/api/chat/clear', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    chatBox.innerHTML = initialWelcomeHtml;
+                    clearAttachment();
+                })
+                .catch(error => {
+                    console.error('Error clearing chat:', error);
+                    alert('Error starting a new chat.');
+                });
+            }
+        });
+
+        document.getElementById('send-button').addEventListener('click', sendMessage);
+
+        // Send message on Enter key press (without Shift)
+        document.getElementById('user-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
