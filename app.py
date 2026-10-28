@@ -1,5 +1,5 @@
 import os
-from app import create_app
+from app.server import app
 
 print("Current working directory:", os.getcwd())  # Print current working directory
 
