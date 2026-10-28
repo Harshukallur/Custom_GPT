@@ -1,11 +1,12 @@
 # requirements.txt
 
+
 python-dotenv
 groq
 pandas
 numpy
-pyyaml
-flask
+PyYAML
+Flask
 markdown
-dotenv
 Pillow
+ollama
