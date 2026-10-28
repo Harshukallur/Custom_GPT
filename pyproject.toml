@@ -1,3 +1,19 @@
 
+[project]
+name = "custom-gpt"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "Flask",
+    "python-dotenv",
+    "groq",
+    "pandas",
+    "numpy",
+    "PyYAML",
+    "markdown",
+    "Pillow",
+    "ollama"
+]
+
 [tool.vercel]
 entrypoint = "run_local:app"
