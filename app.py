@@ -1,4 +1,9 @@
 import os
+import truststore
+
+# Use the OS certificate store so HTTPS works behind corporate SSL inspection
+truststore.inject_into_ssl()
+
 from app import create_app
 
 print("Current working directory:", os.getcwd())  # Print current working directory

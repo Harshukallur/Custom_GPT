@@ -9,3 +9,4 @@ flask
 markdown
 dotenv
 Pillow
+truststore
